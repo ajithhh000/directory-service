@@ -1,1 +1,1 @@
-# Employee Directory - Production Ready Sample
+# Employee Directory - Production Ready Sample for Devops
