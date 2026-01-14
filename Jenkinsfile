@@ -104,6 +104,11 @@ pipeline {
             echo '❌ Pipeline failed!'
             sh 'docker compose logs'
         }
+	always {
+            echo '📊 Cleaning up workspace...'
+            cleanWs()
+        }
+
     }
 }
 
