@@ -1,23 +1,26 @@
+cat > docker-compose.yml << 'EOF'
 services:
   mysql:
     image: mysql:8.0-debian
     container_name: hr_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DB}
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
     networks:
       - hr_network
+    env_file:
+      - .env
 
   app:
     build:
@@ -32,7 +35,7 @@ services:
       MYSQL_DB: ${MYSQL_DB}
       SECRET_KEY: ${SECRET_KEY}
     ports:
-      - "5000:5000"
+      - "${APP_PORT:-5000}:5000"
     depends_on:
       mysql:
         condition: service_healthy
@@ -44,6 +47,8 @@ services:
       start_period: 40s
     networks:
       - hr_network
+    env_file:
+      - .env
 
 volumes:
   mysql_data:
