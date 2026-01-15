@@ -1,4 +1,3 @@
-cat > docker-compose.yml << 'EOF'
 services:
   mysql:
     image: mysql:8.0-debian
