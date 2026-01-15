@@ -7,10 +7,7 @@
 ![AWS EC2](https://img.shields.io/badge/Deployed_on-AWS_EC2-orange?logo=amazon-aws)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-deepblue?logo=mysql)
 
-A production-ready **Employee Directory** web app built with Flask and MySQL, containerized with Docker, and deployed via a fully automated **Jenkins CI/CD pipeline** on **AWS EC2**. Designed with core DevOps principles: infrastructure-as-code, health checks, idempotent deployments, and observability.
-
-> 🔗 **Live Demo**: Deployed on AWS EC2 (IP redacted for security)  
-> 💡 **Ideal for DevOps/portfolio showcases** – demonstrates end-to-end automation from Git push to running service.
+An **Employee Directory** web app built with Flask and MySQL, containerized with Docker, and deployed via a fully automated **Jenkins CI/CD pipeline** on **AWS EC2**. Designed with core DevOps principles: infrastructure-as-code, health checks, idempotent deployments, and observability.
 
 ---
 
@@ -25,7 +22,6 @@ A production-ready **Employee Directory** web app built with Flask and MySQL, co
 - 🎨 Modern, responsive UI with flash messages and confirmation dialogs  
 - ☁️ One-click deployable on **AWS EC2**
 
-![Employee Directory UI](screenshots/employee-directory-ui.png)
 
 ---
 
