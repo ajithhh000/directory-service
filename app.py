@@ -1,38 +1,32 @@
 import os
-import secrets
-import time
 import sys
+import time
 from flask import Flask, render_template, request, redirect, url_for, flash
 import mysql.connector
 from mysql.connector import Error
 
 app = Flask(__name__)
 
-# SECRET_KEY - Required for Flask sessions
-SECRET_KEY = os.environ.get('SECRET_KEY')
-if not SECRET_KEY:
-    print("❌ CRITICAL ERROR: SECRET_KEY environment variable is not set!")
-    print("   This is required for secure session management.")
+# Get configuration from environment variables
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+MYSQL_HOST = os.environ.get('MYSQL_HOST', 'mysql')
+MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
+MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'hrpass123')
+MYSQL_DB = os.environ.get('MYSQL_DB', 'hr_directory')
+
+# Validate critical variables
+if not MYSQL_PASSWORD:
+    print("❌ ERROR: MYSQL_PASSWORD is not set!")
     sys.exit(1)
 
 app.secret_key = SECRET_KEY
 
-# MySQL Configuration - ALL from environment variables (NO DEFAULTS)
-required_env_vars = ['MYSQL_HOST', 'MYSQL_USER', 'MYSQL_PASSWORD', 'MYSQL_DB']
-missing_vars = [var for var in required_env_vars if not os.environ.get(var)]
-
-if missing_vars:
-    print("❌ CRITICAL ERROR: Missing required environment variables:")
-    for var in missing_vars:
-        print(f"   - {var}")
-    print("\n   Set these variables before starting the application.")
-    sys.exit(1)
-
+# MySQL Configuration
 MYSQL_CONFIG = {
-    'host': os.environ['MYSQL_HOST'],
-    'user': os.environ['MYSQL_USER'],
-    'password': os.environ['MYSQL_PASSWORD'],
-    'database': os.environ['MYSQL_DB']
+    'host': MYSQL_HOST,
+    'user': MYSQL_USER,
+    'password': MYSQL_PASSWORD,
+    'database': MYSQL_DB
 }
 
 def get_db_connection():
@@ -51,7 +45,7 @@ def init_db():
     
     while retry_count < max_retries:
         try:
-            # Connect without database first
+            # Connect without specifying database
             conn = mysql.connector.connect(
                 host=MYSQL_CONFIG['host'],
                 user=MYSQL_CONFIG['user'],
@@ -80,7 +74,7 @@ def init_db():
             return True
         except Error as e:
             retry_count += 1
-            print(f"❌ Database initialization attempt {retry_count}/{max_retries} failed: {e}")
+            print(f"❌ Database init attempt {retry_count}/{max_retries} failed: {e}")
             if retry_count < max_retries:
                 print(f"⏳ Retrying in 5 seconds...")
                 time.sleep(5)
@@ -90,7 +84,7 @@ def init_db():
 
 @app.route('/health')
 def health():
-    """Health check endpoint for Docker and monitoring"""
+    """Health check endpoint"""
     conn = get_db_connection()
     if conn:
         try:
@@ -101,7 +95,6 @@ def health():
             conn.close()
             return {'status': 'healthy', 'database': 'connected'}, 200
         except Error as e:
-            print(f"Health check failed: {e}")
             return {'status': 'unhealthy', 'database': 'error', 'error': str(e)}, 503
     return {'status': 'unhealthy', 'database': 'disconnected'}, 503
 
@@ -134,7 +127,6 @@ def add_employee():
         email = request.form.get('email', '').strip()
         hire_date = request.form.get('hire_date', '').strip()
         
-        # Validation
         if not all([name, department, email, hire_date]):
             flash('All fields are required', 'error')
             return render_template('add.html')
@@ -198,7 +190,6 @@ def update_employee(emp_id):
                 flash('Email already exists', 'error')
                 return redirect(url_for('update_employee', emp_id=emp_id))
         
-        # GET request - fetch employee data
         cursor.execute('SELECT * FROM employees WHERE id = %s', (emp_id,))
         employee = cursor.fetchone()
         
@@ -255,12 +246,11 @@ if __name__ == '__main__':
     print(f"   MySQL Host: {MYSQL_CONFIG['host']}")
     print(f"   MySQL User: {MYSQL_CONFIG['user']}")
     print(f"   MySQL Database: {MYSQL_CONFIG['database']}")
-    print(f"   Environment: Production")
     print("⏳ Initializing database...")
     
     if init_db():
         print("✅ Application ready!")
-        print(f"🌐 Server starting on http://0.0.0.0:5000")
+        print("🌐 Server starting on http://0.0.0.0:5000")
         app.run(host='0.0.0.0', port=5000, debug=False)
     else:
         print("❌ Failed to initialize database. Exiting...")
