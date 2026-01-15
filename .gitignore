@@ -1,6 +1,6 @@
 __pycache__/
 *.pyc
 .env
-screenshots
+screenshots/
 *.log
 venv/
